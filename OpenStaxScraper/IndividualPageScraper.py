@@ -10,8 +10,6 @@ def scrapePage(url: str, keepSymbols = False):
     soup = bs4.BeautifulSoup(requests.get(url).text.encode('latin1').decode('utf-8'), features="lxml")
 
     # questionStems = soup.find_all('div', attrs={'data-type':'question-stem'})
-    
-    # Finding every question-answer box on the page
     questionBoxes = soup.find_all('div', attrs={'class':'os-problem-container'})
 
     # print(type(questionBoxes))
@@ -35,7 +33,9 @@ def scrapePage(url: str, keepSymbols = False):
             # Check if the answers have any junk
             if not keepSymbols:
 
-                # Making sure the answer choices don't include any junk
+                # Check if the answers have any subscripts
+                # hasJunk = bool(answer.find('msup')) or bool(answer.find('sub'))
+
                 for junk in junkAttributes:
                     if (hasJunk):
                         # print(answer.getText())
@@ -50,10 +50,9 @@ def scrapePage(url: str, keepSymbols = False):
             
         # If keepSymbols is False and the answer choices contain ions, skip the question-answer pair
         if ((not keepSymbols) and hasJunk):
-            # print("\n\nSKIPPED AN ANSWER:\n", "\n\n")
+            print("\n\nSKIPPED AN ANSWER:\n", "\n\n")
             continue
 
-        # Removing all newlines that previously had the goofy formatted text
         finalAnswers[question.replace("\n", "")] = answerText
         
     return finalAnswers
