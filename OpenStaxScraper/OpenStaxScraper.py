@@ -19,6 +19,4 @@ for i in range(len(textbookQuestPages)):
     allQuestions.append([unit, scrapePage(textbookQuestPages[i])])
 
 with open("questionsAndAnswers.json", "w") as f:
-    # this line of code is really sloppy, ToDo fix when free--Get uploadDataToSheets script to work for last unit instead of adding an extra unit
-    allQuestions.append([9, {'':''}])
     json.dump(allQuestions, f)

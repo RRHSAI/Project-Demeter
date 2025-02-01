@@ -19,7 +19,8 @@ with open("questionsAndAnswers.json") as f:
     QAdata = json.load(f)
 
 values = []
-pastQuestionUnit = QAdata[0][0]  # Initialize with the first unit
+# Initialize with the first unit
+pastQuestionUnit = QAdata[0][0] 
 
 for i, entry in enumerate(QAdata):
     unit_number = entry[0]
@@ -28,6 +29,7 @@ for i, entry in enumerate(QAdata):
     if unit_number != pastQuestionUnit:
         # Write the previous unit's data before switching units
         if values:
+            # Writing Values To Google Sheets(used batchUpdate instead of update because I need to update values multiple times)
             print(f'Writing to sheet: {values}\nRange: Unit{pastQuestionUnit}!A1\n')
             sheet.values().batchUpdate(
                 spreadsheetId=sheet_id,
@@ -54,7 +56,7 @@ for i, entry in enumerate(QAdata):
         answerString = ", ".join([f"({ans})" for ans in answers])
         values.append([question, answerString])
 
-# **Write the last unit's data after exiting the loop**
+# Writing the last unit's data
 if values:
     print(f'Writing final batch to sheet: {values}\nRange: Unit{pastQuestionUnit}!A1\n')
     sheet.values().batchUpdate(

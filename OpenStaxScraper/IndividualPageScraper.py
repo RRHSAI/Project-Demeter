@@ -50,7 +50,7 @@ def scrapePage(url: str, keepSymbols = False):
             
         # If keepSymbols is False and the answer choices contain ions, skip the question-answer pair
         if ((not keepSymbols) and hasJunk):
-            print("\n\nSKIPPED AN ANSWER:\n", "\n\n")
+            # print("\n\nSKIPPED AN ANSWER:\n", "\n\n")
             continue
 
         finalAnswers[question.replace("\n", "")] = answerText

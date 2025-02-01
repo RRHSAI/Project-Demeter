@@ -9,13 +9,17 @@ def scrapeUnits(questionTabs: list, websiteToScrape: str, baseUrl: str):
 
     soup = bs4.BeautifulSoup(pageHTML.text, features="lxml")
 
-    tableOfCont = soup.find_all('li', attrs={'data-type':'unit'}) # May need to use table of contents for dif textbooks
+    # Create a list with every unit's items denoted
+    tableOfCont = soup.find_all('li', attrs={'data-type':'unit'})
     unitNumber = 1
 
     for unit in tableOfCont:
+        # Find the end of the url for every link we need
         units = unit.find_all('a', attrs={'class':'styled__ContentLink-sc-18yti3s-1 cRIWDW'})
         for unit in units:
             # print(repr(unit.getText()))
+
+            # Check if the current link we're on is one of the question pages and add the links if it is
             if unit.getText() in questionTabs:
                 questionURLs.append(baseUrl + unit['href'])
                 unitNumbers.append(unitNumber)
