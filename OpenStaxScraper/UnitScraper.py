@@ -4,7 +4,7 @@ def scrapeUnits(questionTabs: list, websiteToScrape: str, baseUrl: str):
 
     questionURLs = []
 
-    pageHTML = requests.get("https://openstax.org/books/biology-ap-courses/pages/2-review-questions")
+    pageHTML = requests.get(websiteToScrape)
 
     soup = bs4.BeautifulSoup(pageHTML.text, features="lxml")
 
