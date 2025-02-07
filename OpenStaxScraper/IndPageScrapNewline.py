@@ -63,10 +63,11 @@ def scrapeWithNewlines(url: str, keepSymbols = False):
     # print(finalAnswers)
     return finalAnswers
 
-questionAnswerPairs = scrapeWithNewlines("https://openstax.org/books/biology-2e/pages/19-review-questions")
+# To Test Code:
+# questionAnswerPairs = scrapeWithNewlines("https://openstax.org/books/biology-2e/pages/19-review-questions")
 
-for key in questionAnswerPairs.keys():
-    print(key)
-    print(questionAnswerPairs[key])
-    # if not questionAnswerPairs[key]:
-    #     print("\n", key)
+# for key in questionAnswerPairs.keys():
+#     print(key)
+#     print(questionAnswerPairs[key])
+#     # if not questionAnswerPairs[key]:
+#     #     print("\n", key)
