@@ -2,89 +2,95 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, Dataset
+import pandas as pd
 
-# Example TokenizedDataset class (ensure your data is preprocessed)
-class TokenizedDataset(Dataset):
-    def __init__(self, tokenized_inputs, labels):
-        self.inputs = tokenized_inputs  # List/Tensor of input IDs
-        self.labels = labels            # Corresponding labels
+# Custom Dataset for Chatbot Data
+class ChatDataset(Dataset):
+    def __init__(self, data_path, tokenizer, max_length=512):
+        self.tokenizer = tokenizer
+        self.max_length = max_length
+        self.data = pd.read_csv(data_path)  # Assume CSV has 'input' and 'response' columns
 
     def __len__(self):
-        return len(self.inputs)
+        return len(self.data)
 
     def __getitem__(self, idx):
-        return {
-            "input_ids": self.inputs[idx],
-            "labels": self.labels[idx]
-        }
+        input_text = self.data.iloc[idx]['input']
+        response_text = self.data.iloc[idx]['response']
+        
+        # Tokenize input and response
+        input_ids = self.tokenizer(input_text, truncation=True, max_length=self.max_length, return_tensors="pt").input_ids.squeeze(0)
+        response_ids = self.tokenizer(response_text, truncation=True, max_length=self.max_length, return_tensors="pt").input_ids.squeeze(0)
+        
+        return input_ids, response_ids
 
 # Define the DeepSeek model architecture
 class DeepSeekModel(nn.Module):
-    def __init__(self, num_layers=6, hidden_size=768, num_classes=2):
+    def __init__(self, num_layers=6, hidden_size=768, vocab_size=10000):
         super(DeepSeekModel, self).__init__()
-        self.embedding = nn.Embedding(1000, hidden_size)
+        self.embedding = nn.Embedding(vocab_size, hidden_size)
         self.encoder_layers = nn.ModuleList(
             [nn.TransformerEncoderLayer(d_model=hidden_size, nhead=8) for _ in range(num_layers)]
         )
-        self.classifier = nn.Linear(hidden_size, num_classes)
+        self.decoder = nn.Linear(hidden_size, vocab_size)  # Decoder layer for generating responses
 
     def forward(self, input_ids):
         x = self.embedding(input_ids)  # Embedding layer
-        x = x.transpose(0, 1)          # Transpose to match transformer input shape
+        x = x.transpose(0, 1)          # Match transformer input shape
         for layer in self.encoder_layers:
             x = layer(x)
-        x = x[0]                       # Extract the first token's output
-        logits = self.classifier(x)    # Classification head
+        x = x.transpose(0, 1)          # Back to original shape
+        logits = self.decoder(x)       # Output vocabulary logits
         return logits
 
+# Load a tokenizer (example: GPT tokenizer)
+from transformers import AutoTokenizer
+tokenizer = AutoTokenizer.from_pretrained("gpt2")
+
+# Prepare Dataset and DataLoader
+data_path = "chat_data.csv"  # Path to your dataset
+dataset = ChatDataset(data_path, tokenizer)
+dataloader = DataLoader(dataset, batch_size=8, shuffle=True)
+
 # Initialize the model
-model = DeepSeekModel(num_layers=6)  # Adjust `num_layers` based on your needs
+vocab_size = tokenizer.vocab_size
+model = DeepSeekModel(num_layers=6, hidden_size=768, vocab_size=vocab_size)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
 
-# Load new weights into the model
-new_weights_path = "path_to_new_weights.pth"
-model.load_state_dict(torch.load(new_weights_path, map_location=device))
-print("New model weights loaded successfully!")
-
-# Freeze layers (optional)
-for param in model.embedding.parameters():
-    param.requires_grad = False
-print("Embedding layer frozen.")
-
-# Prepare Dataset and DataLoader
-# Replace with actual tokenized inputs and labels
-tokenized_inputs = torch.randint(0, 1000, (100, 50))  # Example random data
-labels = torch.randint(0, 2, (100,))                  # Binary classification labels
-
-dataset = TokenizedDataset(tokenized_inputs, labels)
-dataloader = DataLoader(dataset, batch_size=8, shuffle=True)
-
 # Define loss function and optimizer
-criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-5)
+criterion = nn.CrossEntropyLoss(ignore_index=tokenizer.pad_token_id)  # Ignore padding tokens
+optimizer = optim.AdamW(model.parameters(), lr=5e-5)
 
 # Training loop
 num_epochs = 3
+model.train()
+
 for epoch in range(num_epochs):
-    model.train()
-    running_loss = 0.0
+    epoch_loss = 0
+    for input_ids, response_ids in dataloader:
+        input_ids, response_ids = input_ids.to(device), response_ids.to(device)
 
-    for batch in dataloader:
-        input_ids = batch["input_ids"].to(device)
-        labels = batch["labels"].to(device)
+        # Forward pass
+        logits = model(input_ids)
 
+        # Reshape logits and labels for loss calculation
+        logits = logits.view(-1, vocab_size)
+        response_ids = response_ids.view(-1)
+
+        # Calculate loss
+        loss = criterion(logits, response_ids)
+
+        # Backward pass and optimization
         optimizer.zero_grad()
-        outputs = model(input_ids)
-        loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
 
-        running_loss += loss.item()
+        epoch_loss += loss.item()
 
-    avg_loss = running_loss / len(dataloader)
+    avg_loss = epoch_loss / len(dataloader)
     print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {avg_loss:.4f}")
 
 # Save the fine-tuned model
 torch.save(model.state_dict(), "deepseek_finetuned_weights.pth")
-print("Fine-tuned model weights saved as 'deepseek_finetuned_weights.pth'.")
+print("Fine-tuned DeepSeek model saved!")
