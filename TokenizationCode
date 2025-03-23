@@ -1,18 +1,30 @@
 import nltk
+import pandas as pd
 from nltk.tokenize import word_tokenize, sent_tokenize
 
 # Downloading necessary NLTK resources
 nltk.download('punkt')
 
-# Sample text
-text = "Natural Language Processing is fun! Let's tokenize this text."
+# Specify the name of your CSV file
+file_name = 'example.csv'
 
-# Tokenizing sentences
-sentences = sent_tokenize(text)
-print("Tokenized Sentences:")
-print(sentences)
+# Load the CSV file into a DataFrame
+# Assume the text column is named 'content'
+df = pd.read_csv(file_name)
 
-# Tokenizing words
-words = word_tokenize(text)
-print("\nTokenized Words:")
-print(words)
+# Extract the text content as a list
+# Here, I'm assuming there's a column named 'content'
+text_data = df['content'].tolist()
+
+# Tokenize the text
+for text in text_data:
+    # Tokenizing sentences
+    sentences = sent_tokenize(text)
+    print("Tokenized Sentences:")
+    print(sentences)
+    
+    # Tokenizing words
+    words = word_tokenize(text)
+    print("\nTokenized Words:")
+    print(words)
+    print("-" * 50)
