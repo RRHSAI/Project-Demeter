@@ -10,11 +10,11 @@ file_name = 'chat_data.csv'  # Replace with your actual file name
 df = pd.read_csv(file_name)
 
 # Create new columns for tokenized sentences and words
-df['question_sentences'] = df['question'].apply(lambda x: sent_tokenize(str(x)) if pd.notnull(x) else [])
-df['question_words'] = df['question'].apply(lambda x: word_tokenize(str(x)) if pd.notnull(x) else [])
+df['question_sentences'] = df['Question'].apply(lambda x: sent_tokenize(str(x)) if pd.notnull(x) else [])
+df['question_words'] = df['Question'].apply(lambda x: word_tokenize(str(x)) if pd.notnull(x) else [])
 
-df['answer_sentences'] = df['answer'].apply(lambda x: sent_tokenize(str(x)) if pd.notnull(x) else [])
-df['answer_words'] = df['answer'].apply(lambda x: word_tokenize(str(x)) if pd.notnull(x) else [])
+df['answer_sentences'] = df['Answer'].apply(lambda x: sent_tokenize(str(x)) if pd.notnull(x) else [])
+df['answer_words'] = df['Answer'].apply(lambda x: word_tokenize(str(x)) if pd.notnull(x) else [])
 
 # Save the updated DataFrame back to a new file
 output_file_name = 'tokenized_chat_data.csv'
