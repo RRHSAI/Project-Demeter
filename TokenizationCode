@@ -1,42 +1,23 @@
-import nltk
 import pandas as pd
 from nltk.tokenize import word_tokenize, sent_tokenize
+import nltk
 
-# Downloading necessary NLTK resources
+# Download necessary NLTK resources
 nltk.download('punkt_tab')
 
-# Input CSV + Output CSV
-input_file_name = 'example.csv'
-output_file_name = 'tokenized_output.csv'
+# Load your dataset (assumed to be in CSV format)
+file_name = 'chat_data.csv'  # Replace with your actual file name
+df = pd.read_csv(file_name)
 
-# Load the CSV file 
-df = pd.read_csv(input_file_name)
+# Create new columns for tokenized sentences and words
+df['question_sentences'] = df['question'].apply(lambda x: sent_tokenize(str(x)) if pd.notnull(x) else [])
+df['question_words'] = df['question'].apply(lambda x: word_tokenize(str(x)) if pd.notnull(x) else [])
 
-# Create an empty DataFrame to store the tokenized output
-tokenized_df = pd.DataFrame(columns=['Column', 'Original_Text', 'Tokenized_Sentences', 'Tokenized_Words'])
+df['answer_sentences'] = df['answer'].apply(lambda x: sent_tokenize(str(x)) if pd.notnull(x) else [])
+df['answer_words'] = df['answer'].apply(lambda x: word_tokenize(str(x)) if pd.notnull(x) else [])
 
-# Go through each column
-for column in df.columns:
-    for text in df[column].dropna():  
-        text = str(text)  # Convert value to string (if it's not already text)
-        
-        # Tokenizing sentences
-        sentences = sent_tokenize(text)
-        
-        # Tokenizing words
-        words = word_tokenize(text)
-        
-        # Add the tokenized data to the new DataFrame
-        tokenized_df = pd.concat([
-            tokenized_df,
-            pd.DataFrame({
-                'Column': [column],
-                'Original_Text': [text],
-                'Tokenized_Sentences': [sentences],
-                'Tokenized_Words': [words]
-            })
-        ], ignore_index=True)
+# Save the updated DataFrame back to a new file
+output_file_name = 'tokenized_chat_data.csv'
+df.to_csv(output_file_name, index=False)
 
-# Save the tokenized DataFrame into a CSV file
-tokenized_df.to_csv(output_file_name, index=False)
-
+print(f"Tokenized data saved in: {output_file_name}")
