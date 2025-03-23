@@ -15,8 +15,8 @@ class ChatDataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, idx):
-        input_text = self.data.iloc[idx]['input']
-        response_text = self.data.iloc[idx]['response']
+        input_text = self.data.iloc[idx]['question_words']
+        response_text = self.data.iloc[idx]['answer_words']
         
         # Tokenize input and response
         input_ids = self.tokenizer(input_text, truncation=True, max_length=self.max_length, return_tensors="pt").input_ids.squeeze(0)
