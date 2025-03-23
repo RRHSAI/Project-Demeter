@@ -14,10 +14,10 @@ class ChatDataset(Dataset):
 
     def __getitem__(self, idx):
         # Directly use pre-tokenized input and response IDs
-        input_ids = torch.tensor(eval(self.data.iloc[idx]['input_ids']), dtype=torch.long)
-        response_ids = torch.tensor(eval(self.data.iloc[idx]['response_ids']), dtype=torch.long)
+        input_ids = torch.tensor(eval(self.data.iloc[idx]['question_words']), dtype=torch.long)
+        response_ids = torch.tensor(eval(self.data.iloc[idx]['answer_words']), dtype=torch.long)
         
-        return input_ids, response_ids
+        return question_words, answer_words
 
 # Define the DeepSeek model architecture
 class DeepSeekModel(nn.Module):
@@ -39,7 +39,7 @@ class DeepSeekModel(nn.Module):
         return logits
 
 # Prepare Dataset and DataLoader
-data_path = "chat_data.csv"  # Path to your dataset containing pre-tokenized data
+data_path = "toeknized_data.csv"  # Path to your dataset containing pre-tokenized data
 dataset = ChatDataset(data_path)
 dataloader = DataLoader(dataset, batch_size=8, shuffle=True)
 
