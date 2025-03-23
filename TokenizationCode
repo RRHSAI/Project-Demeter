@@ -1,0 +1,18 @@
+import nltk
+from nltk.tokenize import word_tokenize, sent_tokenize
+
+# Downloading necessary NLTK resources
+nltk.download('punkt')
+
+# Sample text
+text = "Natural Language Processing is fun! Let's tokenize this text."
+
+# Tokenizing sentences
+sentences = sent_tokenize(text)
+print("Tokenized Sentences:")
+print(sentences)
+
+# Tokenizing words
+words = word_tokenize(text)
+print("\nTokenized Words:")
+print(words)
